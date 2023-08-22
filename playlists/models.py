@@ -6,9 +6,9 @@ class Song(models.Model):
     title = models.CharField(max_length=200)
     album = models.CharField(max_length=200)
     artist = models.CharField(max_length=100)
-    danceability_score = models.FloatField()
-    energy_score = models.FloatField()
-    valence_score = models.FloatField()
+    # danceability_score = models.FloatField()
+    # energy_score = models.FloatField()
+    # valence_score = models.FloatField()
 
     def __str__(self):
         return self.title

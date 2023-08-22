@@ -1,0 +1,17 @@
+{% extends 'search/base.html' %}
+
+{% block title %} Search Results {% endblock %}
+
+{% block content %}
+    <h1>Search Results</h1>
+    <p>get list of songs based on search.</p>
+
+    <ul>
+        {% for track in tracks %}
+        <li><input type="checkbox" name="selected_songs" value="{{ track.id }}">
+        {{ track.name }} by {{ track.artists.0.name }}
+        </li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}
