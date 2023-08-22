@@ -7,30 +7,37 @@
 
 <div class="center-wrapper">
 
-    <h1>Do you know your music?</h1>
+    <h1>Spotify Advanced Song Search</h1>
     <p id="subtitle">Spotify scores its music with</p>
 
     <form action="{% url 'playlists:search_results' %}" method="get">
         <input type="text" name="query" placeholder="Search by Song or Artist">
-        <input type="number" step="1" name="danceability_min" min="0" max="10" placeholder="Danceability Min">
-        <input type="number" step="1" name="danceability_max" min="0" max="10" placeholder="Danceability Max">
         <button type="submit">Search</button>
     </form>
-    
-    
-    <div id="selectedSongBox"></div>
-    <audio id="audio" controls volume=".3">
-        <source src="">
-        Your browser does not support the audio element.
-    </audio>
-</div>
 
-<div id="resultsBox">
-    
-    <h2>Search by Spotify</h2>
-    <div id="tracksContainer" class="results-container"></div>
-</div>
+    <!-- For Danceability -->
+    <div class="slider-values">
+        <span class="attribute">Danceability: </span>
+        <span class="noUi-value-lower" id="danceabilityLowerValue">0</span> - 
+        <span class="noUi-value-upper" id="danceabilityUpperValue">100</span>
+    </div>
+    <div id="danceabilitySlider"></div>
 
-<!-- Other scripts and logic you had can be added here -->
+    <!-- For Energy -->
+    <div class="slider-values">
+        <span class="attribute">Energy: </span>
+        <span class="noUi-value-lower" id="energyLowerValue">0</span> - 
+        <span class="noUi-value-upper" id="energyUpperValue">100</span>
+    </div>
+    <div id="energySlider"></div>
+
+    <!-- For Valence -->
+    <div class="slider-values">
+        <span class="attribute">Valence: </span>
+        <span class="noUi-value-lower" id="valenceLowerValue">0</span> - 
+        <span class="noUi-value-upper" id="valenceUpperValue">100</span>
+    </div>
+    <div id="valenceSlider"></div>
+
 
 {% endblock %}

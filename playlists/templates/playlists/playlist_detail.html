@@ -1,9 +1,13 @@
-{% extends 'search/base.html' %}
-
-{% block title %} Playlist Details {% endblock %}
+{% extends "search/base.html" %}
 
 {% block content %}
-
-<h1>Playlist Details</h1>
-
+    <h2>{{ playlist.name }}</h2>
+    <ul>
+        {% for song in playlist.songs.all %}
+        <li>
+            {{ song.title }} by {{ song.artist }} from {{ song.album }}
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'playlists:playlist_list' %}">Back to Playlists</a>
 {% endblock %}

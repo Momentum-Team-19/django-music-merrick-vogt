@@ -3,6 +3,13 @@
 {% block title %} Playlist List {% endblock %}
 
 {% block content %}
-    <h1>Your Playlists</h1>
-    <p>List of the user's playlists.</p>
+<h2>My Playlists</h2>
+
+<ul>
+    {% for playlist in playlists %}
+        <li>
+            <a href="{% url 'playlists:playlist_detail' playlist.id %}">{{ playlist.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
 {% endblock %}

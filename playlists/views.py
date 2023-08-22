@@ -23,6 +23,8 @@ client_credentials_manager = SpotifyClientCredentials(
 
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
+# use query to search Spotify Api. 
+    # danceability filter not implemented yet.
 def search_results_view(request):
     print('Entered a search')
     query = request.GET.get('query')
@@ -38,7 +40,9 @@ def search_results_view(request):
 
     return render(request, 'search/search_results.html', {'tracks': tracks})
 
-
+# save tracks in local db
+# store spotify_id as unique identifier
+# function checks whether the song is already in database. 
 def save_tracks_view(request):
     if request.method == "POST":
         # Extracting selected songs and the playlist name from the POST request
@@ -79,6 +83,13 @@ def playlist_list_view(request):
 
 
 def playlist_detail_view(request, playlist_id):
-    # Fetch details of a specific playlist from the database using get_playlist_by_id
-    playlist = get_playlist_by_id(playlist_id)
-    return render(request, 'playlists/playlist_detail.html', {'playlist': playlist})
+    playlist = Playlist.objects.get(pk=playlist_id)  # Fetch the specific playlist
+    songs = playlist.songs.all()  # Fetch songs associated with the playlist
+
+    context = {
+        'playlist': playlist,
+        'songs': songs,
+    }
+    
+    return render(request, 'playlists/playlist_detail.html', context)
+
