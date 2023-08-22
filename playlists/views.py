@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from .models import Playlist, Song  # Import your Playlist model if needed
 from django.db import models
+from django.http import HttpResponseBadRequest
+
 
 def home_view(request):
     return render(request, 'search/index.html')
@@ -30,31 +32,51 @@ def search_results_view(request):
         results = spotify.search(query, type='track', limit=10)
         tracks = results['tracks']['items']
 
-        for track in tracks:
-            print(f"Attempting to save track: {track['name']}")
-            
-            try:
-                Song.objects.get_or_create(
-                    title=track['name'],
-                    album=track['album']['name'],
-                    artist=track['artists'][0]['name'],  # Taking the first artist for simplicity
-                    # spotify_id=track['id'],
-                    # preview_url=track['preview_url']
-                ) 
-            except Exception as e:
-                print(f"Error saving track {track['name']}: {e}")
-
     else:
         print("No query found")
         tracks = []
 
     return render(request, 'search/search_results.html', {'tracks': tracks})
 
+
+def save_tracks_view(request):
+    if request.method == "POST":
+        # Extracting selected songs and the playlist name from the POST request
+        selected_songs = request.POST.getlist('selected_songs')
+        playlist_name = request.POST['playlist_name']
+
+        # Create a new Playlist
+        playlist = Playlist(name=playlist_name)
+        playlist.save()
+
+        # For each Spotify ID received
+        for spotify_id in selected_songs:
+            # Check if a Song with that Spotify ID already exists
+            song, created = Song.objects.get_or_create(spotify_id=spotify_id)
+
+            # If the song is newly created, fill in the details
+            if created:
+                 # Get the song details from the hidden input fields
+                song.title = request.POST[f'track_{spotify_id}_name']
+                song.album = request.POST[f'track_{spotify_id}_album']
+                song.artist = request.POST[f'track_{spotify_id}_artist']
+                song.save()
+
+            # Associate the song with the new playlist
+            playlist.songs.add(song)
+
+        return redirect('playlists:playlist_detail', playlist_id=playlist.id)
+    else:
+        return HttpResponseBadRequest("Invalid request method")
+
+
+
 # Define your playlist-related views here
 def playlist_list_view(request):
     # Fetch a list of all playlists from the database
     playlists = Playlist.objects.all()
     return render(request, 'playlists/playlist_list.html', {'playlists': playlists})
+
 
 def playlist_detail_view(request, playlist_id):
     # Fetch details of a specific playlist from the database using get_playlist_by_id
