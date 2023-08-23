@@ -11,12 +11,23 @@
         <ul>
             {% for track in tracks %}
                 <li>
-                    <input type="checkbox" name="selected_songs" value="{{ track.id }}" checked>
-                    {{ track.name }} by {{ track.artists.0.name }}
+                    <div>
+                        <input type="checkbox" name="selected_songs" value="{{ track.id }}" checked>
+                        <strong>{{ track.name }}</strong> by <strong>{{ track.artists.0.name }}</strong> 
+                        from <strong>{{ track.album.name }}</strong>
+                        <!-- Displaying audio features just below the name and artist -->
+                        <br> Danceability: {{ track.danceability }} | Energy: {{ track.energy }} |
+                        Valence: {{ track.valence }}
+        
+                    </div>
+
                     <!-- Hidden fields to store track data -->
                     <input type="hidden" name="track_{{ track.id }}_name" value="{{ track.name }}">
                     <input type="hidden" name="track_{{ track.id }}_album" value="{{ track.album.name }}">
                     <input type="hidden" name="track_{{ track.id }}_artist" value="{{ track.artists.0.name }}">
+                    <input type="hidden" name="track_{{ track.id }}_danceability" value="{{ track.danceability }}">
+                    <input type="hidden" name="track_{{ track.id }}_energy" value="{{ track.energy }}">
+                    <input type="hidden" name="track_{{ track.id }}_valence" value="{{ track.valence }}">
                 </li>
             {% endfor %}
         </ul>

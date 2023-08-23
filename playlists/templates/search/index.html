@@ -11,8 +11,8 @@
     <p id="subtitle">Spotify scores its music with</p>
 
     <form action="{% url 'playlists:search_results' %}" method="get">
-        <input type="text" name="query" placeholder="Search by Song or Artist">
-        <button type="submit">Search</button>
+        <input type="text" id= "search_query" name="query" placeholder="Search by Song or Artist">
+        <button onclick="performSearch()">Search</button>
     </form>
 
     <!-- For Danceability -->

@@ -3,9 +3,13 @@
 {% block content %}
     <h2>{{ playlist.name }}</h2>
     <ul>
-        {% for song in playlist.songs.all %}
+        {% for entry in combined_data %}
         <li>
-            {{ song.title }} by {{ song.artist }} from {{ song.album }}
+            <strong>{{ entry.song.title }}</strong> by <strong>{{ entry.song.artist }}</strong> 
+            from <strong>{{ entry.song.album }}</strong><br>
+            Danceability: {{ entry.feature.danceability }} | 
+            Energy: {{ entry.feature.energy }} | 
+            Valence: {{ entry.feature.valence }}
         </li>
         {% endfor %}
     </ul>
