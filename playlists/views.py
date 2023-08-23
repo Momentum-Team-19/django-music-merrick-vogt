@@ -51,6 +51,7 @@ def search_results_view(request):
     LIMIT = 50
     NUM_REQUESTS = 4
     MAX_FILTERED_TRACKS = 10
+    num_track = 0
 
     filtered_tracks = []
 
@@ -63,11 +64,11 @@ def search_results_view(request):
             results = spotify.search(query, type='track', limit=LIMIT, offset=i * LIMIT)
             tracks = results['tracks']['items']
 
-            num_track = 0
+            
             for track in tracks:
                 if len(filtered_tracks) >= MAX_FILTERED_TRACKS:
                     break
-                num_track += 1
+                
                 # Fetch and round audio features
                 features = spotify.audio_features([track['id']])
                 danceability = int(round(features[0]['danceability'] * 100))
@@ -84,11 +85,14 @@ def search_results_view(request):
                     extended_track = track.copy()
                     extended_track.update({'danceability': danceability, 'energy': energy, 'valence': valence})
                     filtered_tracks.append(extended_track)
+                
+                # Increment num_track (do not reset it)
+                num_track += 1
 
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    print(f'How many songs did it take? {(i-1)*50+num_track}')
+    print(f'How many songs did it take? {num_track}')
     print(f'Filtered tracks: {len(filtered_tracks)}')
     
     # Render the response
