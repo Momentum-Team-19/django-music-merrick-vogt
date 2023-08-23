@@ -25,74 +25,81 @@ client_credentials_manager = SpotifyClientCredentials(
 
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-# use query to search Spotify Api. 
-    # danceability filter not implemented yet.
+
+# search
 def search_results_view(request):
     print('Entered a search')
     
     query = request.GET.get('query')
-
-    # Get danceability, energy, and valence min/max values
-    min_danceability = int(request.GET.get('min_danceability', request.COOKIES.get('min_danceability', 0)))
-    max_danceability = int(request.GET.get('max_danceability', request.COOKIES.get('max_danceability', 100)))
-    min_energy = int(request.GET.get('min_energy', request.COOKIES.get('min_energy', 0)))
-    max_energy = int(request.GET.get('max_energy', request.COOKIES.get('max_energy', 100)))
-    min_valence = int(request.GET.get('min_valence', request.COOKIES.get('min_valence', 0)))
-    max_valence = int(request.GET.get('max_valence', request.COOKIES.get('max_valence', 100)))
-    print(request.GET)
-    print(request.COOKIES)
-    
-    print(f"Min danceability: {min_danceability}, Max danceability: {max_danceability}")
-    print(f"Min energy: {min_energy}, Max energy: {max_energy}")
-    print(f"Min valence: {min_valence}, Max valence: {max_valence}")
-
-    # Initialize an empty list to hold the filtered tracks
-    filtered_tracks = []
-    
-    if query:
-        # Search for tracks using Spotify API
-        results = spotify.search(query, type='track', limit=10)
-        tracks = results['tracks']['items']
-
-        # For each track, fetch its audio features
-        for track in tracks:
-            features = spotify.audio_features([track['id']])
-            track_name = track['name']
-            danceability = int(round(features[0]['danceability'] * 100))
-            energy = int(round(features[0]['energy'] * 100))
-            valence = int(round(features[0]['valence'] * 100))
-
-            print(f"Danceability: {danceability} Energy: {energy} Valence: {valence} Track: {track_name} ")  # Debug print
-            
-            # Check if the track meets the user's criteria for danceability, energy, and valence
-            if min_danceability <= danceability <= max_danceability and \
-            min_energy <= energy <= max_energy and \
-            min_valence <= valence <= max_valence:
-                extended_track = track.copy()
-                extended_track['danceability'] = danceability
-                extended_track['energy'] = energy
-                extended_track['valence'] = valence
-                filtered_tracks.append(extended_track)
-
-    else:
+    if not query:
         print("No query found")
-        tracks = []
+        return render(request, 'search/search_results.html', {'tracks': []})
+    
+    # Get filter values
+    filter_values = {
+        'min_danceability': int(request.GET.get('min_danceability', request.COOKIES.get('min_danceability', 0))),
+        'max_danceability': int(request.GET.get('max_danceability', request.COOKIES.get('max_danceability', 100))),
+        'min_energy': int(request.GET.get('min_energy', request.COOKIES.get('min_energy', 0))),
+        'max_energy': int(request.GET.get('max_energy', request.COOKIES.get('max_energy', 100))),
+        'min_valence': int(request.GET.get('min_valence', request.COOKIES.get('min_valence', 0))),
+        'max_valence': int(request.GET.get('max_valence', request.COOKIES.get('max_valence', 100)))
+    }
+    
+    # Debug print filter values
+    print(filter_values)
 
-    print(len(tracks))
-    print(len(filtered_tracks))
+    LIMIT = 50
+    NUM_REQUESTS = 4
+    MAX_FILTERED_TRACKS = 10
 
-    # Create response and set cookies
+    filtered_tracks = []
+
+    try:
+        for i in range(NUM_REQUESTS):
+            if len(filtered_tracks) >= MAX_FILTERED_TRACKS:
+                break
+            
+            # Fetch tracks
+            results = spotify.search(query, type='track', limit=LIMIT, offset=i * LIMIT)
+            tracks = results['tracks']['items']
+
+            num_track = 0
+            for track in tracks:
+                if len(filtered_tracks) >= MAX_FILTERED_TRACKS:
+                    break
+                num_track += 1
+                # Fetch and round audio features
+                features = spotify.audio_features([track['id']])
+                danceability = int(round(features[0]['danceability'] * 100))
+                energy = int(round(features[0]['energy'] * 100))
+                valence = int(round(features[0]['valence'] * 100))
+
+                # Debug print track features
+                # print(f"Danceability: {danceability} Energy: {energy} Valence: {valence} Track: {track['name']}")
+
+                # Apply filter
+                if filter_values['min_danceability'] <= danceability <= filter_values['max_danceability'] \
+                and filter_values['min_energy'] <= energy <= filter_values['max_energy'] \
+                and filter_values['min_valence'] <= valence <= filter_values['max_valence']:
+                    extended_track = track.copy()
+                    extended_track.update({'danceability': danceability, 'energy': energy, 'valence': valence})
+                    filtered_tracks.append(extended_track)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    print(f'How many songs did it take? {(i-1)*50+num_track}')
+    print(f'Filtered tracks: {len(filtered_tracks)}')
+    
+    # Render the response
     response = render(request, 'search/search_results.html', {'tracks': filtered_tracks})
-
+    
     # Set cookies for the new filter values
-    response.set_cookie('min_danceability', min_danceability)
-    response.set_cookie('max_danceability', max_danceability)
-    response.set_cookie('min_energy', min_energy)
-    response.set_cookie('max_energy', max_energy)
-    response.set_cookie('min_valence', min_valence)
-    response.set_cookie('max_valence', max_valence)
+    for key, value in filter_values.items():
+        response.set_cookie(key, value)
 
     return response
+
 
 # save tracks in local db
 # store spotify_id as unique identifier
