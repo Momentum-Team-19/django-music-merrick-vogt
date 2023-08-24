@@ -7,13 +7,34 @@
 
 <div class="center-wrapper">
 
+    {% if spotify_user_name != "Guest" %}
+        <h1>Hello, {{ spotify_user_name }}!</h1>
+    {% else %}
+        <h1>Hello, Guest!</h1>
+    {% endif %}
+
+
     <h1>Spotify Advanced Song Search</h1>
-    <p id="subtitle">Spotify scores its music with</p>
+    <p id="subtitle">Use a general search term</p>
 
     <form action="{% url 'playlists:search_results' %}" method="get">
-        <input type="text" id= "search_query" name="query" placeholder="Search by Song or Artist">
+        <input type="text" id= "search_query" name="query" placeholder="Search by key term">
+
+        <!-- Dropdown for Spotify playlists -->
+        <!-- <select name="playlist">
+            <option value="" disabled selected>Select a Spotify Playlist</option> -->
+            
+            <!-- list of playlists from Spotipy Fetch -->
+            <!-- {% for playlist in playlists %}
+            <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+            {% endfor %}
+        </select> -->
+
+
         <button onclick="performSearch()">Search</button>
     </form>
+
+
 
     <!-- For Danceability -->
     <div class="slider-values">

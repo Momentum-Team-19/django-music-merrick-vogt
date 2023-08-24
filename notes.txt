@@ -1,0 +1,26 @@
+Django Music App
+
+Next Feature
+- Spotipy OAuth
+
+New Features to Add
+- Search by Spotify Playlist
+- Search by User Playlists
+- Button to create playlist in Spotify account
+
+Smaller features
+- Delete playlist
+- Delete song
+
+Spicy
+- Color scores by gradient - green (high) and red (low)
+- Preview playlist songs (maybe first 2 songs or character limit)
+
+Bugs 
+- Should require different name for new playlists?
+- Smaller Nav bar elements sometimes appear, sometimes don’t
+- Sometimes reset to 20 instead of cookies
+    - Esp. when cookies = 0
+
+Other 
+- Django debugger toolbar extension

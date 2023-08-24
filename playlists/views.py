@@ -7,16 +7,6 @@ from django.db import models
 from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
 import json
 
-
-def home_view(request):
-    return render(request, 'search/index.html')
-
-# Define your Playlist model and playlist-related functions here
-def get_playlist_by_id(playlist_id):
-    # Implement logic to fetch playlist details from the database based on playlist_id
-    # Return the playlist object
-    return playlist_id
-
 # Set up Spotify API client
 client_credentials_manager = SpotifyClientCredentials(
     client_id='3259917e1dfb4220abda16c477fc371a',
@@ -25,15 +15,49 @@ client_credentials_manager = SpotifyClientCredentials(
 
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
+# populate playlist dropdown 
+# get Spotify User Name
+def home_view(request):
+    playlists = spotify.category_playlists('pop')['playlists']['items']
+    categories_result = spotify.categories(limit=50)
+    categories = categories_result['categories']['items']
 
-# search
+    # Get Spotify user name from the session
+    spotify_user_name = request.session.get('spotify_user_name', 'Guest')
+
+    # Add playlists and Spotify user name to the context
+    context = {
+        'playlists': playlists,
+        'spotify_user_name': spotify_user_name  # Add this line
+    }
+
+    return render(request, 'search/index.html', context)
+
+
+# Define your Playlist model and playlist-related functions here
+def get_playlist_by_id(playlist_id):
+    # Implement logic to fetch playlist details from the database based on playlist_id
+    # Return the playlist object
+    return playlist_id
+
+
+
+# search results
 def search_results_view(request):
     print('Entered a search')
     
     query = request.GET.get('query')
-    if not query:
-        print("No query found")
-        return render(request, 'search/search_results.html', {'tracks': []})
+    # if not query:
+
+    #     playlist_id = request.GET.get('playlist')
+    #     print(playlist_id)
+    #     playlists = spotify.category_playlists('pop')['playlists']['items']  # Fetch playlists for the "pop" category
+    #     print(playlists)
+    #     if playlist_id:
+    #         # Fetch tracks from the selected playlist
+    #         tracks = spotify.playlist_tracks(playlist_id)['items']
+    #         # ... rest of the logic to filter and display tracks
+    #     return render(request, 'search/search_results.html', {'playlists': playlists})
     
     # Get filter values
     filter_values = {
@@ -178,10 +202,6 @@ def playlist_detail_view(request, playlist_id):
         'playlist': playlist,
         'combined_data': combined_data,
     }
-
-    print(features)
-    print(f'simplified features: {simplified_features}')
-    print(context)
     
     return render(request, 'playlists/playlist_detail.html', context)
 

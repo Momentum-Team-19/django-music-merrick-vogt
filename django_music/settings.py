@@ -40,6 +40,13 @@ INSTALLED_APPS = [
 
     # local apps
     'playlists',
+    'accounts',
+
+    # OAuth
+    'allauth',
+    'allauth.account','allauth.socialaccount',
+    'allauth.socialaccount.providers.spotify',
+    'social_django',
 
 ]
 
