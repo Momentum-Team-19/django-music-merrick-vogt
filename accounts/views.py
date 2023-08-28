@@ -48,4 +48,17 @@ def spotify_login(request):
 
     return redirect('playlists:home')  # Redirect to home view after Spotify login
 
+def spotify_logout(request):
+    # Clear the session variables related to Spotify
+    if 'user_id' in request.session:
+        del request.session['user_id']
+    if 'spotify_user_name' in request.session:
+        del request.session['spotify_user_name']
+            
+    # Optionally, add a message to be displayed after logout
+    # messages.add_message(request, messages.SUCCESS, 'You have been logged out.')
+    print('user logged out')
+
+    return redirect('playlists:home')
+
 

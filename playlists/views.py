@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy import SpotifyException
-from .models import Playlist, Song  # Import your Playlist model if needed
+from .models import Playlist, Song 
+from accounts.models import SpotifyUser
 from django.db import models
 from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
 import json
@@ -18,16 +19,16 @@ spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 # populate playlist dropdown 
 # get Spotify User Name
 def home_view(request):
-    playlists = spotify.category_playlists('pop')['playlists']['items']
-    categories_result = spotify.categories(limit=50)
-    categories = categories_result['categories']['items']
+    # playlists = spotify.category_playlists('pop')['playlists']['items']
+    # categories_result = spotify.categories(limit=50)
+    # categories = categories_result['categories']['items']
 
     # Get Spotify user name from the session
     spotify_user_name = request.session.get('spotify_user_name', 'Guest')
 
     # Add playlists and Spotify user name to the context
     context = {
-        'playlists': playlists,
+        # 'playlists': playlists,
         'spotify_user_name': spotify_user_name  # Add this line
     }
 
@@ -140,7 +141,20 @@ def save_tracks_view(request):
 
         # Create a new Playlist
         playlist = Playlist(name=playlist_name)
+
+        # Get the logged-in user's ID from the session
+        user_id = request.session.get('user_id')
+        
+        # Fetch the SpotifyUser instance for the logged-in user
+        user = SpotifyUser.objects.get(id=user_id)
+        
+        # Add the user to the playlist's users
+        # breakpoint()
+        # playlist.users.add(user)
+
         playlist.save()
+        user.playlists.add(playlist)
+        user.save()
 
         # For each Spotify ID received
         for spotify_id in selected_songs:
