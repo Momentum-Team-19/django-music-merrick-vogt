@@ -10,8 +10,10 @@
             Danceability: {{ entry.feature.danceability }} | 
             Energy: {{ entry.feature.energy }} | 
             Valence: {{ entry.feature.valence }}
+            <br><a href="{% url 'playlists:delete_song' playlist.id entry.song.id %}">Delete Song</a>
         </li>
         {% endfor %}
     </ul>
-    <a href="{% url 'playlists:playlist_list' %}">Back to Playlists</a>
+    <a href="{% url 'playlists:playlist_delete' playlist.id %}">Delete Playlist</a>
+    <br><a href="{% url 'playlists:playlist_list' %}">Back to Playlists</a>
 {% endblock %}

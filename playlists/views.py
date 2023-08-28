@@ -16,7 +16,13 @@ client_credentials_manager = SpotifyClientCredentials(
 
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-# populate playlist dropdown 
+# Ensure guest account exists
+def ensure_guest_account_exists():
+    SpotifyUser.objects.get_or_create(id=0, defaults={'spotify_id': 'guest', 'name': 'Guest'})
+
+# Call the function to ensure the guest account exists
+ensure_guest_account_exists()
+
 # get Spotify User Name
 def home_view(request):
     # playlists = spotify.category_playlists('pop')['playlists']['items']
@@ -180,9 +186,24 @@ def save_tracks_view(request):
 
 # Define your playlist-related views here
 def playlist_list_view(request):
-    # Fetch a list of all playlists from the database
-    playlists = Playlist.objects.all()
+    # Default to 0, which we'll assume corresponds to a guest account
+    user_id = request.session.get('user_id', 0)
+
+    try:
+        user = SpotifyUser.objects.get(id=user_id)
+    except SpotifyUser.DoesNotExist:
+        # If the user doesn't exist, we'll fall back to the guest account
+        print('User does not exist, falling back to guest account')
+        user = SpotifyUser.objects.get(id=0)  # Load the guest account
+
+    playlists = Playlist.objects.filter(users=user)
+
+    if user_id == 0:
+        print('Guest Account')
+
     return render(request, 'playlists/playlist_list.html', {'playlists': playlists})
+
+
 
 
 def playlist_detail_view(request, playlist_id):
@@ -199,7 +220,11 @@ def playlist_detail_view(request, playlist_id):
         features = [{} for _ in spotify_ids]  # Fallback to an empty list of features
     
     # Simplifying the features for each track
-    simplified_features = [{k: int(round(track[k] * 100)) for k in ('danceability', 'energy', 'valence')} for track in features]
+    simplified_features = [
+    {k: int(round(track[k] * 100)) for k in ('danceability', 'energy', 'valence')} 
+    for track in features if track is not None
+    ]
+
 
     # Creating a list to hold the combined song and feature data
     combined_data = []
@@ -220,3 +245,18 @@ def playlist_detail_view(request, playlist_id):
     return render(request, 'playlists/playlist_detail.html', context)
 
 
+def playlist_delete_view(request, playlist_id):
+    # Fetch the specific playlist and delete it
+    playlist = Playlist.objects.get(pk=playlist_id)
+    playlist.delete()
+    return redirect('playlists:playlist_list')
+
+def delete_song_view(request, playlist_id, song_id):
+    # Fetch the specific playlist and song
+    playlist = Playlist.objects.get(pk=playlist_id)
+    song = Song.objects.get(pk=song_id)
+    
+    # Remove the song from the playlist
+    playlist.songs.remove(song)
+    
+    return redirect('playlists:playlist_detail', playlist_id=playlist.id)

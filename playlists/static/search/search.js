@@ -7,8 +7,8 @@ function createSlider(elementId, lowerValueId, upperValueId, minCookieName, maxC
     }
 
     // Try to read cookies, and use them if available. Otherwise, use default values.
-    const minVal = parseInt(getCookie(minCookieName)) || 20;
-    const maxVal = parseInt(getCookie(maxCookieName)) || 80;
+    const minVal = parseInt(getCookie(minCookieName)) || 0;
+    const maxVal = parseInt(getCookie(maxCookieName)) || 100;
 
     noUiSlider.create(slider, {
         start: [minVal, maxVal],
