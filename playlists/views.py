@@ -10,8 +10,8 @@ import json
 
 # Set up Spotify API client
 client_credentials_manager = SpotifyClientCredentials(
-    client_id='3259917e1dfb4220abda16c477fc371a',
-    client_secret='939c9bfd2d5c47c786af2456b1d6b536'
+    client_id='',
+    client_secret=''
 )
 
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -30,12 +30,22 @@ def home_view(request):
     # categories = categories_result['categories']['items']
 
     # Get Spotify user name from the session
-    spotify_user_name = request.session.get('spotify_user_name', 'Guest')
+    # spotify_user_name = request.session.get('spotify_user_name', 'Guest')
+
+    spotify_user = None  # Initialize to None
+
+    try:
+        spotify_token = request.session.get('spotify_token', None)
+        spotify_user = spotipy.Spotify(auth=spotify_token).current_user()
+        print(spotify_user)
+        print(f'Logged in user_id: {request.session.get("user_id")}')
+    except:
+        print('no token')
 
     # Add playlists and Spotify user name to the context
     context = {
         # 'playlists': playlists,
-        'spotify_user_name': spotify_user_name  # Add this line
+        'spotify_user_name': spotify_user['display_name'] if spotify_user else 'Guest'
     }
 
     return render(request, 'search/index.html', context)
